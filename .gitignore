@@ -1,0 +1,22 @@
+cat > .gitignore << 'EOF'
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+
+# renv (keep lockfile, ignore local library/cache)
+renv/library/
+renv/python/
+renv/staging/
+renv/local/
+renv/.cache/
+renv/cache/
+renv/lock/
+
+# Shiny / misc
+*.log
+EOF
+
