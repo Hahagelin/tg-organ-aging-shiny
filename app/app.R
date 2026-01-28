@@ -4,8 +4,6 @@
 
 library(shiny)
 library(bslib)
-library(svgPanZoom)
-enableBookmarking("url")
 
 # ============================================================================
 # CONFIGURATION & PATHS
@@ -68,6 +66,18 @@ create_display_choices <- function(values) {
   if (length(values) == 0) return(character(0))
   display_names <- sapply(values, format_display_name)
   setNames(values, display_names)
+}
+
+get_covariate_set_display_name <- function(analysis_set) {
+  mapping <- c(
+    "core" = "Multivariable",
+    "base" = "Minimally adjusted",
+    "extended" = "Multivariable + eGFR"
+  )
+  if (analysis_set %in% names(mapping)) {
+    return(mapping[analysis_set])
+  }
+  analysis_set
 }
 
 # ============================================================================
@@ -211,12 +221,38 @@ find_within_pair_heatmap_svg <- function(analysis_set, variant, pair_type = "all
 }
 
 discover_within_pair_forest_files <- function(analysis_set, pair_type = "all_pairs") {
+  exposures <- character(0)
+  
+  # Check within_pair directory
   forest_dir <- file.path(RESULTS_ROOT, "baseline", analysis_set, "current_health", "within_pair", "forest_table")
-  if (!dir.exists(forest_dir)) return(character(0))
-  pair_suffix <- if (pair_type == "mz_twins" || pair_type == "mz_pairs") "mz_pairs" else "all_pairs"
-  pattern <- paste0("^forest_(.+)_", pair_suffix, "\\.svg$")
-  svg_files <- list.files(forest_dir, pattern = pattern, full.names = FALSE)
-  sort(gsub(pattern, "\\1", svg_files))
+  if (dir.exists(forest_dir)) {
+    pair_suffix <- if (pair_type == "mz_twins" || pair_type == "mz_pairs") "mz_pairs" else "all_pairs"
+    pattern <- paste0("^forest_(.+)_", pair_suffix, "\\.svg$")
+    svg_files <- list.files(forest_dir, pattern = pattern, full.names = FALSE)
+    exposures <- gsub(pattern, "\\1", svg_files)
+  }
+  
+  # Also check discordant directory for variables that don't have within_pair files
+  discordant_dir <- file.path(RESULTS_ROOT, "baseline", analysis_set, "current_health", "discordant", "forest_table")
+  if (dir.exists(discordant_dir)) {
+    discordant_suffix <- if (pair_type == "mz_twins" || pair_type == "mz_pairs") "mz" else "all"
+    discordant_pattern <- paste0("^forest_(.+)_", discordant_suffix, "\\.svg$")
+    discordant_files <- list.files(discordant_dir, pattern = discordant_pattern, full.names = FALSE)
+    discordant_exposures <- gsub(discordant_pattern, "\\1", discordant_files)
+    
+    # Map discordant variable names to match main variable names
+    name_mapping <- c("smoking" = "eversmok", "exercise" = "exercise_how_often")
+    for (i in seq_along(discordant_exposures)) {
+      if (discordant_exposures[i] %in% names(name_mapping)) {
+        discordant_exposures[i] <- name_mapping[discordant_exposures[i]]
+      }
+    }
+    
+    # Combine with existing exposures, removing duplicates
+    exposures <- unique(c(exposures, discordant_exposures))
+  }
+  
+  sort(exposures)
 }
 
 find_within_pair_forest_svg <- function(analysis_set, exposure, pair_type = "all_pairs") {
@@ -225,6 +261,31 @@ find_within_pair_forest_svg <- function(analysis_set, exposure, pair_type = "all
   filename <- paste0("forest_", exposure, "_", pair_suffix, ".svg")
   target <- file.path(RESULTS_ROOT, "baseline", analysis_set, "current_health", "within_pair", "forest_table", filename)
   if (file.exists(target)) return(normalizePath(target))
+  
+  # Also check discordant directory for variables that don't have within_pair files
+  # Reverse mapping: eversmok -> smoking, exercise_how_often -> exercise
+  reverse_mapping <- c("eversmok" = "smoking", "exercise_how_often" = "exercise")
+  discordant_exposure <- if (exposure %in% names(reverse_mapping)) {
+    reverse_mapping[exposure]
+  } else {
+    exposure
+  }
+  
+  discordant_dir <- file.path(RESULTS_ROOT, "baseline", analysis_set, "current_health", "discordant", "forest_table")
+  if (dir.exists(discordant_dir)) {
+    discordant_suffix <- if (pair_type == "mz_twins" || pair_type == "mz_pairs") "mz" else "all"
+    discordant_filename <- paste0("forest_", discordant_exposure, "_", discordant_suffix, ".svg")
+    discordant_target <- file.path(discordant_dir, discordant_filename)
+    if (file.exists(discordant_target)) return(normalizePath(discordant_target))
+    
+    # Also try mz_pairs variant if looking for mz_twins
+    if (pair_type == "mz_twins") {
+      discordant_filename_alt <- paste0("forest_", discordant_exposure, "_mz_pairs.svg")
+      discordant_target_alt <- file.path(discordant_dir, discordant_filename_alt)
+      if (file.exists(discordant_target_alt)) return(normalizePath(discordant_target_alt))
+    }
+  }
+  
   NULL
 }
 
@@ -377,6 +438,30 @@ find_prevalent_disease_within_forest_svg <- function(analysis_set, time_interval
   }
   filename <- paste0(prefix, disease, ".svg")
   target <- file.path(RESULTS_ROOT, "baseline", analysis_set, "prevalent_disease", "within", time_interval, filename)
+  if (file.exists(target)) return(normalizePath(target))
+  NULL
+}
+
+# ============================================================================
+# FILE DISCOVERY: ORGAN MODELS (TOP 10 PROTEINS)
+# ============================================================================
+
+discover_organ_model_organs <- function() {
+  organ_dir <- file.path(RESULTS_ROOT, "organ_age_distribution", "organ_models")
+  if (!dir.exists(organ_dir)) return(character(0))
+  svg_files <- list.files(organ_dir, pattern = "_top_proteins\\.svg$", full.names = FALSE)
+  if (!length(svg_files)) return(character(0))
+  organs <- gsub("_top_proteins\\.svg$", "", svg_files)
+  sort(organs)
+}
+
+find_organ_model_svg <- function(organ) {
+  if (is.null(organ)) return(NULL)
+  base_dir <- file.path(RESULTS_ROOT, "organ_age_distribution", "organ_models")
+  
+  filename <- paste0(organ, "_top_proteins.svg")
+  target <- file.path(base_dir, filename)
+  
   if (file.exists(target)) return(normalizePath(target))
   NULL
 }
@@ -824,12 +909,12 @@ ui <- page_sidebar(
         style = "padding: 1rem;",
         tags$style(HTML("
           #analysis_type .radio:first-child {
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
           }
-          #analysis_type_label_separator {
+          .analysis_type_label {
             display: block;
             margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             margin-left: 20px;
             font-weight: 600;
             font-size: 0.875rem;
@@ -842,20 +927,49 @@ ui <- page_sidebar(
             "analysis_type",
             NULL,
             choices = c(
-              "Introduction" = "landing",
-              "Baseline" = "baseline",
-              "Incident age-related disease" = "cox",
+              "Study overview" = "landing",
+              "Clock compositions" = "clock_proteins",
+              "Baseline health" = "baseline",
+              "Incident disease & mortality" = "cox",
               "Multimorbidity" = "multimorbidity"
             ),
             selected = "landing"
           ),
           tags$script(HTML("
             $(document).ready(function() {
-              // Insert 'Analysis type' label after Introduction
-              var label = $('<div id=\"analysis_type_label_separator\">Analysis type</div>');
-              $('#analysis_type .radio:first-child').after(label);
+              var $radios = $('#analysis_type .radio');
+              if ($radios.length) {
+                var resultsLabel = $('<div class=\"analysis_type_label\">Organ age associations</div>');
+                if ($radios.length > 2) {
+                  $radios.eq(2).before(resultsLabel);
+                }
+              }
             });
           "))
+        )
+      )
+    ),
+    
+    conditionalPanel(
+      condition = "input.analysis_type == 'clock_proteins'",
+      card(
+        class = "dynamic-card",
+        card_header("Clock protein options"),
+        card_body(
+          class = "dynamic-card-body",
+          style = "padding: 0.75rem;",
+          tags$label(class = "control-label mb-2 fw-bold", "View"),
+          radioButtons(
+            "clock_view_mode",
+            NULL,
+            choices = c("Gallery" = "gallery", "Focused" = "focused"),
+            selected = "gallery"
+          ),
+          conditionalPanel(
+            condition = "input.clock_view_mode == 'focused'",
+            tags$label(class = "control-label mb-2 fw-bold", "Organ clock"),
+            uiOutput("clock_focus_organ_selector")
+          )
         )
       )
     ),
@@ -1062,23 +1176,6 @@ ui <- page_sidebar(
       )
     ),
     
-    
-    br(),
-    card(
-      class = "mt-2",
-      card_body(
-        style = "padding: 0.75rem;",
-        bookmarkButton(
-          id = "bookmark_state", 
-          label = "Bookmark this view", 
-          class = "btn-primary btn-sm w-100"
-        ),
-        tags$p(
-          class = "small text-muted mb-0 mt-2",
-          "Creates a shareable URL that preserves your current selections (covariate set, analysis type, and plot configuration)."
-        )
-      )
-    )
   ),
   
   uiOutput("main_content")
@@ -1366,7 +1463,7 @@ server <- function(input, output, session) {
     svg_path
   })
   
-  output$heatmap_ui <- renderSvgPanZoom({
+  output$heatmap_ui <- renderUI({
     svg_path <- current_heatmap_path()
     if (is.null(svg_path)) {
       msg <- if (input$analysis_type == "baseline" && 
@@ -1380,7 +1477,205 @@ server <- function(input, output, session) {
       }
       return(div(class = "alert alert-warning", style = "margin: 2rem;", msg))
     }
-    svgPanZoom(svg_path, controlIconsEnabled = TRUE, fit = TRUE, center = TRUE)
+    
+    # Convert absolute path to relative path from www directory
+    # Since files are in www/plots, extract path relative to www/
+    rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+    tags$img(src = rel_path, style = "width: 100%; height: auto; max-height: 600px;")
+  })
+  
+  output$baseline_health_heatmap_caption <- renderUI({
+    if (!(input$analysis_type == "baseline" && 
+          input$subcategory == "current_health" && 
+          input$baseline_ch_viz_tabs == "heatmap")) {
+      return(NULL)
+    }
+    
+    scope <- if (is.null(input$baseline_ch_scope)) "main" else input$baseline_ch_scope
+    
+    variant <- if (scope == "within_pair") {
+      if (is.null(input$within_pair_heatmap_variant)) return(NULL)
+      input$within_pair_heatmap_variant
+    } else {
+      if (is.null(input$mortality_heatmap_variant)) return(NULL)
+      input$mortality_heatmap_variant
+    }
+    
+    if (is.null(variant) || is.null(input$analysis_set)) return(NULL)
+    
+    covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
+    
+    scope_text <- if (scope == "main") {
+      "At cohort level"
+    } else if (scope == "within_pair") {
+      pair_type <- if (is.null(input$baseline_ch_within_pair_type)) "all_pairs" else input$baseline_ch_within_pair_type
+      if (pair_type == "mz_twins") {
+        "Within monozygotic twin pairs"
+      } else {
+        "Within all twin pairs"
+      }
+    } else {
+      ""
+    }
+    
+    variant_display <- format_display_name(variant)
+    
+    div(
+      class = "text-muted small mt-3",
+      style = "line-height: 1.6;",
+      tags$p(
+        class = "mb-0",
+        "Heatmap showing associations between each organ age and ", 
+        tags$strong(variant_display), 
+        " markers from linear (continuous outcome) and logistic (binary outcome) regression. ",
+        "Each row represents an outcome, each column an organ age. ",
+        "Effect sizes are standardized and reflect a 1 SD increase in organ age. ",
+        "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+        "Models use the ", tags$strong(covariate_set_name), " covariate set. ",
+        scope_text, "."
+      )
+    )
+  })
+  
+  output$prevalent_disease_heatmap_caption <- renderUI({
+    if (!(input$analysis_type == "baseline" && 
+          input$subcategory == "prevalent_disease" && 
+          input$baseline_pd_viz_tabs == "heatmap")) {
+      return(NULL)
+    }
+    
+    if (is.null(input$prevalent_disease_time_interval) || is.null(input$analysis_set)) return(NULL)
+    
+    scope <- if (is.null(input$prevalent_disease_scope)) "main" else input$prevalent_disease_scope
+    
+    covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
+    
+    time_window_display <- format_display_name(input$prevalent_disease_time_interval)
+    
+    scope_text <- if (scope == "main") {
+      "At cohort level"
+    } else if (scope == "within") {
+      pair_type <- if (is.null(input$prevalent_within_pair_type)) "all_pairs" else input$prevalent_within_pair_type
+      if (pair_type == "mz_twins") {
+        "Within monozygotic twin pairs"
+      } else {
+        "Within all twin pairs"
+      }
+    } else {
+      ""
+    }
+    
+    div(
+      class = "text-muted small mt-3",
+      style = "line-height: 1.6;",
+      tags$p(
+        class = "mb-0",
+        "Heatmap showing associations between each organ age and prior disease at baseline using logistic regression. ",
+        "Each row represents a disease, each column an organ age. ",
+        "Effect sizes are displayed as log(OR) and reflect a 1 SD increase in organ age. ",
+        "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+        "Models use the ", tags$strong(covariate_set_name), " covariate set. ",
+        "Look-back window: ", tags$strong(time_window_display), ". ",
+        scope_text, "."
+      )
+    )
+  })
+  
+  output$cox_heatmap_caption <- renderUI({
+    if (!(input$analysis_type == "cox" && input$cox_viz_tabs == "heatmap")) {
+      return(NULL)
+    }
+    
+    if (is.null(input$analysis_set)) return(NULL)
+    
+    scope <- if (is.null(input$cox_scope)) "main" else input$cox_scope
+    
+    covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
+    
+    scope_text <- if (scope == "main") {
+      "At cohort level"
+    } else if (scope == "within_pair") {
+      pair_type <- if (is.null(input$cox_within_pair_type)) "all_pairs" else input$cox_within_pair_type
+      if (pair_type == "mz_twins") {
+        "Within monozygotic twin pairs"
+      } else {
+        "Within all twin pairs"
+      }
+    } else {
+      ""
+    }
+    
+    div(
+      class = "text-muted small mt-3",
+      style = "line-height: 1.6;",
+      tags$p(
+        class = "mb-0",
+        "Heatmap showing associations between each organ age and risk of incident major diseases ",
+        "from Cox proportional hazards models. ",
+        "Each row represents an outcome, each column an organ age. ",
+        "Colors indicate log hazard ratios per 1 SD higher organ age, adjusted for the ", 
+        tags$strong(covariate_set_name), " covariate set. ",
+        "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+        scope_text, "."
+      )
+    )
+  })
+  
+  output$multimorbidity_heatmap_caption <- renderUI({
+    if (!(input$analysis_type == "multimorbidity" && input$mm_viz_tabs == "heatmap")) {
+      return(NULL)
+    }
+    
+    if (is.null(input$analysis_set) || is.null(input$mm_category_tabs)) return(NULL)
+    
+    mm_cat <- input$mm_category_tabs
+    scope <- if (is.null(input$mm_scope)) "main" else input$mm_scope
+    
+    covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
+    
+    scope_text <- if (scope == "main") {
+      "At cohort level"
+    } else if (scope == "within_pair") {
+      pair_type <- if (is.null(input$mm_within_pair_type)) "all_pairs" else input$mm_within_pair_type
+      if (pair_type == "mz_twins") {
+        "Within monozygotic twin pairs"
+      } else {
+        "Within all twin pairs"
+      }
+    } else {
+      ""
+    }
+    
+    if (mm_cat == "nb") {
+      div(
+        class = "text-muted small mt-3",
+        style = "line-height: 1.6;",
+        tags$p(
+          class = "mb-0",
+          "Heatmap showing associations between organ ages and baseline multimorbidity within major disease groupings. ",
+          "Each row represents a disease grouping, each column an organ age. ",
+          "Effect sizes are expressed as log incidence rate ratio (IRR) per 1 SD increase in organ age. ",
+          "IRRs were estimated from count-based regression models and reflect the relative change in multimorbidity burden associated with higher organ age. ",
+          "Models use the ", tags$strong(covariate_set_name), " covariate set. ",
+          "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+          scope_text, "."
+        )
+      )
+    } else {
+      div(
+        class = "text-muted small mt-3",
+        style = "line-height: 1.6;",
+        tags$p(
+          class = "mb-0",
+          "Heatmap showing associations between organ ages and the accumulation of diseases within disease groupings. ",
+          "Each row represents a disease grouping, each column an organ age. ",
+          "Colors indicate log hazard ratio for accelerated diagnosis accumulation per 1 SD increase in organ age, ",
+          "adjusted for the ", tags$strong(covariate_set_name), " covariate set. ",
+          "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+          scope_text, "."
+        )
+      )
+    }
   })
   
   output$download_heatmap <- downloadHandler(
@@ -1457,8 +1752,8 @@ server <- function(input, output, session) {
     }
   })
   
-  # Visualization: Forest tables with svgPanZoom
-  output$forest_ui <- renderSvgPanZoom({
+  # Visualization: Forest tables
+  output$forest_ui <- renderUI({
     svg_path <- current_forest_path()
     if (is.null(svg_path)) {
       msg <- if (input$analysis_type == "baseline" && 
@@ -1472,7 +1767,11 @@ server <- function(input, output, session) {
       }
       return(div(class = "alert alert-warning", style = "margin: 2rem;", msg))
     }
-    svgPanZoom(svg_path, controlIconsEnabled = TRUE, fit = TRUE, center = TRUE)
+    
+    # Convert absolute path to relative path from www directory
+    # Since files are in www/plots, extract path relative to www/
+    rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+    tags$img(src = rel_path, style = "width: 100%; height: auto; max-height: 600px;")
   })
   
   # Forest table metadata
@@ -1525,6 +1824,77 @@ server <- function(input, output, session) {
     }
   )
   
+  output$clock_focus_organ_selector <- renderUI({
+    organs <- discover_organ_model_organs()
+    if (!length(organs)) {
+      return(div(class = "alert alert-info", "No organ models found."))
+    }
+    
+    preferred <- "Brain"
+    selected <- input$clock_focus_organ
+    if (is.null(selected) || !selected %in% organs) {
+      selected <- if (preferred %in% organs) preferred else organs[1]
+    }
+    
+    selectInput(
+      "clock_focus_organ",
+      NULL,
+      choices = create_display_choices(organs),
+      selected = selected
+    )
+  })
+  
+  output$organ_model_ui <- renderUI({
+    organs <- discover_organ_model_organs()
+    if (!length(organs)) {
+      return(div(class = "alert alert-info", style = "margin: 2rem;", "No organ models found."))
+    }
+    
+    mode <- if (is.null(input$clock_view_mode)) "gallery" else input$clock_view_mode
+    
+    if (identical(mode, "focused")) {
+      if (is.null(input$clock_focus_organ)) {
+        return(div(class = "alert alert-info", style = "margin: 2rem;", "Select an organ in the sidebar to view its top proteins."))
+      }
+      svg_path <- find_organ_model_svg(input$clock_focus_organ)
+      if (is.null(svg_path)) {
+        return(div(class = "alert alert-info", style = "margin: 2rem;", "Organ model plot not available for this organ."))
+      }
+      rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+      return(tags$img(src = rel_path, style = "width: 100%; height: auto; max-height: 600px;"))
+    }
+    
+    cards <- lapply(organs, function(org) {
+      svg_path <- find_organ_model_svg(org)
+      if (is.null(svg_path)) return(NULL)
+      rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+      card(
+        card_body(
+          tags$img(src = rel_path, style = "width: 100%; height: auto;")
+        )
+      )
+    })
+    
+    cards <- Filter(Negate(is.null), cards)
+    if (!length(cards)) {
+      return(div(class = "alert alert-info", style = "margin: 2rem;", "Organ model plots not available."))
+    }
+    
+    do.call(layout_column_wrap, c(list(width = 1/2), cards))
+  })
+  
+  output$download_clock_proteins <- downloadHandler(
+    filename = function() {
+      "supplementary-data-1-clocks-proteins.xlsx"
+    },
+    content = function(file) {
+      src <- file.path(RESULTS_ROOT, "supplementary-data-1-clocks-proteins.xlsx")
+      if (file.exists(src)) {
+        file.copy(src, file)
+      }
+    }
+  )
+  
   
   # Find roadmap image - check multiple possible locations
   roadmap_image_found <- reactive({
@@ -1561,7 +1931,7 @@ server <- function(input, output, session) {
       has_roadmap <- roadmap_image_found()
       
       layout_columns(
-        col_widths = c(12, 6, 6, 12),
+        col_widths = c(12, 6, 6),
         
         card(
           class = "bg-light",
@@ -1577,7 +1947,7 @@ server <- function(input, output, session) {
             ),
             tags$p(
               class = "small text-muted mb-1",
-              tags$sup("1"), "Karolinska Institutet, Stockholm, Sweden. ",
+              tags$sup("1"), "Department of Medical Epidemiology and Biostatistics, Karolinska Institutet, Stockholm, Sweden. ",
               tags$sup("2"), "KTH Royal Institute of Technology, Stockholm, Sweden."
             ),
             tags$p(
@@ -1621,71 +1991,70 @@ server <- function(input, output, session) {
           )
         },
         
-        card(
-          card_header(class = "fw-bold", "Covariate sets"),
-          card_body(
-            tags$ul(
-              class = "list-unstyled mb-0",
-              tags$li(
-                class = "mb-3 pb-3 border-bottom",
-                tags$strong("Multivariable (primary)"),
-                tags$p(
-                  class = "mb-0 mt-1 small",
-                  "Age, sex, years of education, smoking status (ever vs. never), ",
-                  "body mass index (BMI), glycated hemoglobin (HbA1c), total-to-HDL cholesterol ratio, ",
-                  "and C-reactive protein (CRP)."
-                )
-              ),
-              tags$li(
-                class = "mb-3 pb-3 border-bottom",
-                tags$strong("Minimally adjusted"),
-                tags$p(class = "mb-0 mt-1 small", "Age and sex.")
-              ),
-              tags$li(
-                class = "mb-0",
-                tags$strong("Multivariable + eGFR"),
-                tags$p(
-                  class = "mb-0 mt-1 small",
-                  "All multivariable covariates plus estimated glomerular ",
-                  "filtration rate based on creatinine and cystatin C (eGFRcr-cys). ",
-                  "Analysed separately due to data availability in a subset of participants."
-                )
-              )
-            )
-          )
-        ),
-        
-        if (has_roadmap) {
+        tagList(
           card(
-            class = "bg-light",
-            card_header(class = "fw-bold", "How to use this app"),
+            card_header(class = "fw-bold", "Covariate sets"),
             card_body(
-              tags$ol(
-                class = "mb-0",
-                tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
-                tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
-                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest plots"), " for detailed estimates."),
-                tags$li("Zoom and pan to inspect specific organ–outcome associations."),
-                tags$li("Use the ", tags$strong("Bookmark"), " button to generate a shareable URL with your current configuration.")
+              tags$ul(
+                class = "list-unstyled mb-0",
+                tags$li(
+                  class = "mb-3 pb-3 border-bottom",
+                  tags$strong("Multivariable (primary)"),
+                  tags$p(
+                    class = "mb-0 mt-1 small",
+                    "Age, sex, years of education, smoking status (ever vs. never), ",
+                    "body mass index (BMI), glycated hemoglobin (HbA1c), total-to-HDL cholesterol ratio, ",
+                    "and C-reactive protein (CRP)."
+                  )
+                ),
+                tags$li(
+                  class = "mb-3 pb-3 border-bottom",
+                  tags$strong("Minimally adjusted"),
+                  tags$p(class = "mb-0 mt-1 small", "Age and sex.")
+                ),
+                tags$li(
+                  class = "mb-0",
+                  tags$strong("Multivariable + eGFR"),
+                  tags$p(
+                    class = "mb-0 mt-1 small",
+                    "All multivariable covariates plus estimated glomerular ",
+                    "filtration rate based on creatinine and cystatin C (eGFRcr-cys). ",
+                    "Analysed separately due to data availability in a subset of participants."
+                  )
+                )
               )
             )
-          )
-        } else {
-          card(
-            class = "bg-light",
-            card_header(class = "fw-bold", "How to use this app"),
-            card_body(
-              tags$ol(
-                class = "mb-0",
-                tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
-                tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
-                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest plots"), " for detailed estimates."),
-                tags$li("Zoom and pan to inspect specific organ–outcome associations."),
-                tags$li("Use the ", tags$strong("Bookmark"), " button to generate a shareable URL with your current configuration.")
+          ),
+          if (has_roadmap) {
+            card(
+              class = "bg-light mt-3",
+              card_header(class = "fw-bold", "How to use this app"),
+              card_body(
+                tags$ol(
+                  class = "mb-0",
+                  tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
+                  tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
+                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest tables"), " for detailed estimates."),
+                  tags$li("Zoom and pan to inspect specific organ–outcome associations.")
+                )
               )
             )
-          )
-        }
+          } else {
+            card(
+              class = "bg-light mt-3",
+              card_header(class = "fw-bold", "How to use this app"),
+              card_body(
+                tags$ol(
+                  class = "mb-0",
+                  tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
+                  tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
+                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest tables"), " for detailed estimates."),
+                  tags$li("Zoom and pan to inspect specific organ–outcome associations.")
+                )
+              )
+            )
+          }
+        )
       )
     } else {
       # Analysis content
@@ -1699,6 +2068,20 @@ server <- function(input, output, session) {
             nav_panel("Prior disease", value = "prevalent_disease")
           ),
           uiOutput("baseline_category_text")
+        ),
+        
+        conditionalPanel(
+          condition = "input.analysis_type == 'clock_proteins'",
+          tagList(
+            downloadButton("download_clock_proteins", "Download clock protein data (xlsx)", class = "btn-sm btn-primary mb-2"),
+            uiOutput("clock_proteins_intro_text"),
+            card(
+              card_header("Top 10 proteins by organ"),
+              card_body(
+                uiOutput("organ_model_ui")
+              )
+            )
+          )
         ),
         
         conditionalPanel(
@@ -1722,7 +2105,23 @@ server <- function(input, output, session) {
           card(
             card_header("Heatmap Visualization"),
             card_body(
-              svgPanZoomOutput("heatmap_ui", height = "600px")
+              uiOutput("heatmap_ui"),
+              conditionalPanel(
+                condition = "input.analysis_type == 'baseline' && input.subcategory == 'current_health' && input.baseline_ch_viz_tabs == 'heatmap'",
+                uiOutput("baseline_health_heatmap_caption")
+              ),
+              conditionalPanel(
+                condition = "input.analysis_type == 'baseline' && input.subcategory == 'prevalent_disease' && input.baseline_pd_viz_tabs == 'heatmap'",
+                uiOutput("prevalent_disease_heatmap_caption")
+              ),
+              conditionalPanel(
+                condition = "input.analysis_type == 'cox' && input.cox_viz_tabs == 'heatmap'",
+                uiOutput("cox_heatmap_caption")
+              ),
+              conditionalPanel(
+                condition = "input.analysis_type == 'multimorbidity' && input.mm_viz_tabs == 'heatmap'",
+                uiOutput("multimorbidity_heatmap_caption")
+              )
             ),
             card_footer(
               class = "text-end",
@@ -1736,7 +2135,7 @@ server <- function(input, output, session) {
           card(
             card_header("Forest Table"),
             card_body(
-              svgPanZoomOutput("forest_ui", height = "600px")
+              uiOutput("forest_ui")
             ),
             card_footer(
               class = "d-flex justify-content-between align-items-center",
@@ -1778,6 +2177,21 @@ server <- function(input, output, session) {
     )
   })
   
+  output$clock_proteins_intro_text <- renderUI({
+    div(
+      class = "alert alert-info mb-2",
+      style = "background-color: #e7f3ff; border-left: 4px solid #3498db; border-radius: 0.5rem; padding: 0.5rem 0.75rem;",
+      tags$strong("Clock proteins"),
+      tags$p(
+        class = "mb-0 mt-1",
+        style = "font-size: 0.9rem;",
+        "Overview of proteins contributing most strongly to the organ-specific aging clocks. ",
+        "Browse, in a two-column gallery, the top 10 clock proteins for each organ. ",
+        "Proteins are ranked by the largest absolute clock coefficient observed in either the male or female models."
+      )
+    )
+  })
+  
   output$baseline_category_text <- renderUI({
     req(input$subcategory)
     
@@ -1793,7 +2207,7 @@ server <- function(input, output, session) {
           "including lifestyle, clinical biomarkers, and other markers of aging."
         )
       )
-    } else {
+    } else if (input$subcategory == "prevalent_disease") {
       div(
         class = "alert alert-light mb-2 mt-1",
         style = "background-color: #f8f9fa; border-left: 3px solid #6c757d; border-radius: 0.5rem; padding: 0.4rem 0.75rem;",
@@ -1804,6 +2218,8 @@ server <- function(input, output, session) {
           "Associations between organ ages and prior diagnoses of age-related diseases."
         )
       )
+    } else {
+      NULL
     }
   })
   
@@ -1852,4 +2268,4 @@ server <- function(input, output, session) {
   })
 }
 
-shinyApp(ui, server, enableBookmarking = "url")
+shinyApp(ui, server)

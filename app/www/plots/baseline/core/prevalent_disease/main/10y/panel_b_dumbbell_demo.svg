@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='360.00pt' height='230.40pt' viewBox='0 0 360.00 230.40'>
+<g class='svglite'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHwzNjAuMDB8MC4wMHwyMzAuNDA='>
+    <rect x='0.00' y='0.00' width='360.00' height='230.40' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHwzNjAuMDB8MC4wMHwyMzAuNDA=)'>
+<rect x='0.00' y='-0.000000000000057' width='360.00' height='230.40' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+</g>
+<defs>
+  <clipPath id='cpMTMxLjMwfDM0NS44M3w1LjY3fDE5My44Mg=='>
+    <rect x='131.30' y='5.67' width='214.53' height='188.15' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMTMxLjMwfDM0NS44M3w1LjY3fDE5My44Mg==)'>
+<line x1='155.81' y1='193.82' x2='155.81' y2='5.67' style='stroke-width: 0.85; stroke: #E5E5E5; stroke-linecap: butt;' />
+<line x1='168.76' y1='181.55' x2='196.14' y2='181.55' style='stroke-width: 1.07; stroke: #BFBFBF; stroke-opacity: 0.90; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
+<line x1='144.80' y1='140.65' x2='212.14' y2='140.65' style='stroke-width: 1.07; stroke: #BFBFBF; stroke-opacity: 0.90; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
+<line x1='157.26' y1='99.75' x2='237.62' y2='99.75' style='stroke-width: 1.07; stroke: #BFBFBF; stroke-opacity: 0.90; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
+<line x1='171.96' y1='58.84' x2='269.37' y2='58.84' style='stroke-width: 1.07; stroke: #BFBFBF; stroke-opacity: 0.90; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
+<line x1='149.07' y1='17.94' x2='332.32' y2='17.94' style='stroke-width: 1.07; stroke: #BFBFBF; stroke-opacity: 0.90; stroke-dasharray: 5.69,5.69; stroke-linecap: butt;' />
+<circle cx='168.76' cy='181.55' r='3.48' style='stroke-width: 0.57; stroke: #2166AC; fill: #2166AC;' />
+<circle cx='144.80' cy='140.65' r='3.48' style='stroke-width: 0.57; stroke: #2166AC; fill: #2166AC;' />
+<circle cx='157.26' cy='99.75' r='3.48' style='stroke-width: 0.57; stroke: #2166AC; fill: #2166AC;' />
+<circle cx='171.96' cy='58.84' r='3.48' style='stroke-width: 0.57; stroke: #2166AC; fill: #2166AC;' />
+<circle cx='149.07' cy='17.94' r='3.48' style='stroke-width: 0.57; stroke: #2166AC; fill: #2166AC;' />
+<circle cx='196.14' cy='181.55' r='4.55' style='stroke-width: 0.57; stroke: #B71C1C; fill: #B71C1C;' />
+<circle cx='212.14' cy='140.65' r='4.55' style='stroke-width: 0.57; stroke: #B71C1C; fill: #B71C1C;' />
+<circle cx='237.62' cy='99.75' r='4.55' style='stroke-width: 0.57; stroke: #B71C1C; fill: #B71C1C;' />
+<circle cx='269.37' cy='58.84' r='4.55' style='stroke-width: 0.57; stroke: #B71C1C; fill: #B71C1C;' />
+<circle cx='332.32' cy='17.94' r='4.55' style='stroke-width: 0.57; stroke: #B71C1C; fill: #B71C1C;' />
+</g>
+<g clip-path='url(#cpMC4wMHwzNjAuMDB8MC4wMHwyMzAuNDA=)'>
+<text x='126.37' y='185.50' text-anchor='end' style='font-size: 11.00px; font-family: "Helvetica";' textLength='123.53px' lengthAdjust='spacingAndGlyphs'>Cerebrovascular Disease</text>
+<text x='126.37' y='144.59' text-anchor='end' style='font-size: 11.00px; font-family: "Helvetica";' textLength='116.19px' lengthAdjust='spacingAndGlyphs'>Ischemic Heart Disease</text>
+<text x='126.37' y='103.69' text-anchor='end' style='font-size: 11.00px; font-family: "Helvetica";' textLength='78.25px' lengthAdjust='spacingAndGlyphs'>Atrial Fibrillation</text>
+<text x='126.37' y='62.79' text-anchor='end' style='font-size: 11.00px; font-family: "Helvetica";' textLength='43.44px' lengthAdjust='spacingAndGlyphs'>Diabetes</text>
+<text x='126.37' y='21.89' text-anchor='end' style='font-size: 11.00px; font-family: "Helvetica";' textLength='63.59px' lengthAdjust='spacingAndGlyphs'>Heart Failure</text>
+<polyline points='155.81,196.56 155.81,193.82 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='194.35,196.56 194.35,193.82 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='232.90,196.56 232.90,193.82 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='271.44,196.56 271.44,193.82 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='309.99,196.56 309.99,193.82 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<text x='155.81' y='208.67' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>0.0</text>
+<text x='194.35' y='208.67' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>0.2</text>
+<text x='232.90' y='208.67' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>0.4</text>
+<text x='271.44' y='208.67' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>0.6</text>
+<text x='309.99' y='208.67' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>0.8</text>
+<text x='238.56' y='222.41' text-anchor='middle' style='font-size: 10.50px; font-family: "Helvetica";' textLength='101.03px' lengthAdjust='spacingAndGlyphs'>Mean organ age (SD)</text>
+</g>
+</g>
+</svg>

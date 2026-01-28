@@ -1,3 +1,4 @@
+# NOTE: must be built with --platform=linux/amd64 (rocker/shiny not arm64)
 FROM rocker/shiny:4.5.1
 
 RUN apt-get update && \

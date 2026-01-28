@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='432.00pt' height='288.00pt' viewBox='0 0 432.00 288.00'>
+<g class='svglite'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+    .svglite g.glyphgroup path {
+      fill: inherit;
+      stroke: none;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw0MzIuMDB8MC4wMHwyODguMDA='>
+    <rect x='0.00' y='0.00' width='432.00' height='288.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw0MzIuMDB8MC4wMHwyODguMDA=)'>
+<rect x='0.000000000000032' y='0.00' width='432.00' height='288.00' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<rect x='139.32' y='14.17' width='155.95' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #B71C1C;' />
+<rect x='139.32' y='48.45' width='68.45' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #D8968A;' />
+<rect x='139.32' y='82.73' width='59.02' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #D9A196;' />
+<rect x='139.32' y='117.01' width='53.23' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #DAA89E;' />
+<rect x='139.32' y='151.29' width='41.58' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #DBB6AE;' />
+<rect x='139.32' y='185.57' width='27.35' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #DBC6C2;' />
+<rect x='139.32' y='219.85' width='11.64' height='24.00' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #D9D9D9;' />
+<line x1='139.32' y1='243.84' x2='139.32' y2='14.17' style='stroke-width: 0.64; stroke: #666666; stroke-linecap: butt;' />
+<text x='301.57' y='29.23' style='font-size: 8.54px; font-family: "Helvetica";' textLength='89.20px' lengthAdjust='spacingAndGlyphs'>Top: Brain, Nerve, Liver</text>
+<text x='214.07' y='63.51' style='font-size: 8.54px; font-family: "Helvetica";' textLength='122.42px' lengthAdjust='spacingAndGlyphs'>Top: Liver, Cardiovascular, Brain</text>
+<text x='204.64' y='97.79' style='font-size: 8.54px; font-family: "Helvetica";' textLength='189.36px' lengthAdjust='spacingAndGlyphs'>Top: Kidney and Bladder, Cardiovascular, Immune</text>
+<text x='198.85' y='132.07' style='font-size: 8.54px; font-family: "Helvetica";' textLength='125.28px' lengthAdjust='spacingAndGlyphs'>Top: Endocrine, Pancreas, Ovary</text>
+<text x='187.20' y='166.35' style='font-size: 8.54px; font-family: "Helvetica";' textLength='126.53px' lengthAdjust='spacingAndGlyphs'>Top: Ovary, Cardiovascular, Brain</text>
+<text x='172.97' y='200.63' style='font-size: 8.54px; font-family: "Helvetica";' textLength='135.72px' lengthAdjust='spacingAndGlyphs'>Top: Gastrointestinal, Skin, Prostate</text>
+<text x='157.26' y='234.91' style='font-size: 8.54px; font-family: "Helvetica";' textLength='138.09px' lengthAdjust='spacingAndGlyphs'>Top: Immune, Gastrointestinal, Brain</text>
+<text x='126.44' y='235.44' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='63.92px' lengthAdjust='spacingAndGlyphs'>Breast Cancer</text>
+<text x='126.44' y='201.16' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='72.27px' lengthAdjust='spacingAndGlyphs'>Prostate Cancer</text>
+<text x='126.44' y='166.88' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='112.27px' lengthAdjust='spacingAndGlyphs'>Cerebrovascular Disease</text>
+<text x='126.44' y='132.60' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='105.59px' lengthAdjust='spacingAndGlyphs'>Ischemic Heart Disease</text>
+<text x='126.44' y='98.32' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='39.47px' lengthAdjust='spacingAndGlyphs'>Diabetes</text>
+<text x='126.44' y='64.04' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='71.12px' lengthAdjust='spacingAndGlyphs'>Atrial Fibrillation</text>
+<text x='126.44' y='29.76' text-anchor='end' style='font-size: 10.00px; font-family: "Helvetica";' textLength='57.80px' lengthAdjust='spacingAndGlyphs'>Heart Failure</text>
+<polyline points='139.32,246.58 139.32,243.84 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='218.81,246.58 218.81,243.84 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<polyline points='298.30,246.58 298.30,243.84 ' style='stroke-width: 0.64; stroke: #7F7F7F; stroke-linecap: butt;' />
+<text x='139.32' y='258.69' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>1.0</text>
+<text x='218.81' y='258.69' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>1.5</text>
+<text x='298.30' y='258.69' text-anchor='middle' style='font-size: 10.00px; font-family: "Helvetica";' textLength='13.91px' lengthAdjust='spacingAndGlyphs'>2.0</text>
+<text x='246.25' y='271.58' text-anchor='middle' style='font-size: 11.00px; font-family: "Helvetica";' textLength='157.84px' lengthAdjust='spacingAndGlyphs'>Mean Odds Ratio across organs</text>
+</g>
+</g>
+</svg>
