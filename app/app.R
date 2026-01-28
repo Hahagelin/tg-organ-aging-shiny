@@ -2032,10 +2032,11 @@ server <- function(input, output, session) {
               card_body(
                 tags$ol(
                   class = "mb-0",
-                  tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
-                  tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
-                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest tables"), " for detailed estimates."),
-                  tags$li("Zoom and pan to inspect specific organ–outcome associations.")
+                  tags$li("Select a ", tags$strong("covariate set"), " to define the adjustment strategy used in the analyses."),
+                  tags$li("Choose an ", tags$strong("analysis type"), " to explore baseline health, incident disease, or multimorbidity."),
+                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort-level overview of associations across organs and outcomes."),
+                  tags$li("Switch to the ", tags$strong("forest tables"), " to inspect individual estimates and confidence intervals in detail."),
+                  tags$li("Explore ", tags$strong("clock composition"), " to see the proteins that contribute most strongly to each organ-specific aging clock.")
                 )
               )
             )
@@ -2046,10 +2047,11 @@ server <- function(input, output, session) {
               card_body(
                 tags$ol(
                   class = "mb-0",
-                  tags$li("Choose a ", tags$strong("covariate set"), " to define the adjustment strategy."),
-                  tags$li("Select an ", tags$strong("analysis type"), " (baseline, incident disease, or multimorbidity)."),
-                tags$li("Use the ", tags$strong("heatmap"), " for an overview, then switch to ", tags$strong("forest tables"), " for detailed estimates."),
-                  tags$li("Zoom and pan to inspect specific organ–outcome associations.")
+                  tags$li("Select a ", tags$strong("covariate set"), " to define the adjustment strategy used in the analyses."),
+                  tags$li("Choose an ", tags$strong("analysis type"), " to explore baseline health, incident disease, or multimorbidity."),
+                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort-level overview of associations across organs and outcomes."),
+                  tags$li("Switch to the ", tags$strong("forest tables"), " to inspect individual estimates and confidence intervals in detail."),
+                  tags$li("Explore ", tags$strong("clock composition"), " to see the proteins that contribute most strongly to each organ-specific aging clock.")
                 )
               )
             )
