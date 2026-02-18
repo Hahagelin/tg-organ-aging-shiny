@@ -33,6 +33,7 @@ format_display_name <- function(name) {
     bmi = "BMI", whr = "Waist-to-hip ratio", hba1c = "HbA1c", ldl = "LDL", hdl = "HDL",
     crp = "CRP", mz = "MZ", dz = "DZ",
     edyrs = "Education years", "fi_10" = "Frailty index (10%)", "fi 10" = "Frailty index (10%)",
+    exercise_how_often = "Exercise frequency",
     atrial_fibrillation = "Atrial Fibrillation",
     ischemic_heart_disease = "Ischemic Heart Disease",
     cerebrovascular_disease = "Cerebrovascular Disease",
@@ -43,7 +44,7 @@ format_display_name <- function(name) {
     male = "Male", female = "Female",
     all_pairs = "All Pairs", mz_twins = "MZ Twins", mz_pairs = "MZ Twins",
     dz_twins = "DZ Twins",
-    smoking = "Smoking", alcohol = "Alcohol", glucose = "Glucose",
+    smoking = "Smoking", eversmok = "Smoking (ever)", alcohol = "Alcohol", glucose = "Glucose",
     diabetes = "Diabetes", hypertension = "Hypertension", dementia = "Dementia",
     parkinsons = "Parkinson's Disease", melanoma = "Melanoma",
     cardiovascular = "Cardiovascular", neuropsychiatric = "Neuropsychiatric",
@@ -72,7 +73,7 @@ get_covariate_set_display_name <- function(analysis_set) {
   mapping <- c(
     "core" = "Multivariable",
     "base" = "Minimally adjusted",
-    "extended" = "Multivariable + eGFR"
+    "extended" = "Multivariable + eGFR (cr-cys)"
   )
   if (analysis_set %in% names(mapping)) {
     return(mapping[analysis_set])
@@ -829,6 +830,57 @@ ui <- page_sidebar(
       .bslib-card .card-header {
         padding: 0.5rem 0.75rem !important;
       }
+      .navset-card-tab .nav-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.5rem;
+      }
+      .navset-card-tab .nav-tabs .nav-link {
+        white-space: normal;
+      }
+      .navset-card-tab .nav-item {
+        flex: 0 0 auto;
+      }
+      .navset-card-tab .nav-tabs {
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+      .navset-tab .nav-tabs,
+      .navset-pill .nav-tabs,
+      .navset-card-tab .nav-tabs {
+        flex-wrap: wrap;
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+      .navset-tab .nav-item,
+      .navset-pill .nav-item,
+      .navset-card-tab .nav-item {
+        flex: 0 0 auto;
+      }
+      .heatmap-gallery-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .heatmap-gallery-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .heatmap-gallery-img {
+        width: 100%;
+        height: auto;
+        max-height: 28vh;
+        object-fit: contain;
+      }
+      @media (min-width: 1200px) {
+        .heatmap-gallery-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .heatmap-gallery-img {
+          max-height: 55vh;
+        }
+      }
     ")),
     tags$script(HTML("
       $(document).ready(function() {
@@ -998,15 +1050,18 @@ ui <- page_sidebar(
             nav_panel("Heatmap", value = "heatmap"),
             nav_panel("Forest table", value = "forest_table")
           ),
-          tags$label(class = "control-label mb-2 fw-bold", "Scope"),
-          radioButtons(
-            "cox_scope",
-            NULL,
-            choices = c("Population-level" = "main", "Within-pair" = "within_pair"),
-            selected = "main"
+          conditionalPanel(
+            condition = "input.cox_viz_tabs == 'forest_table' || (input.cox_viz_tabs == 'heatmap' && input.cox_heatmap_view != 'gallery')",
+            tags$label(class = "control-label mb-2 fw-bold", "Scope"),
+            radioButtons(
+              "cox_scope",
+              NULL,
+              choices = c("Cohort-level" = "main", "Within-pair" = "within_pair"),
+              selected = "main"
+            )
           ),
           conditionalPanel(
-            condition = "input.cox_scope == 'within_pair'",
+            condition = "input.cox_scope == 'within_pair' && (input.cox_viz_tabs == 'forest_table' || (input.cox_viz_tabs == 'heatmap' && input.cox_heatmap_view != 'gallery'))",
             div(
               class = "within-pair-suboptions",
               radioButtons(
@@ -1020,6 +1075,16 @@ ui <- page_sidebar(
           conditionalPanel(
             condition = "input.cox_viz_tabs == 'forest_table'",
             uiOutput("outcome_selector")
+          ),
+          conditionalPanel(
+            condition = "input.cox_viz_tabs == 'heatmap'",
+            tags$label(class = "control-label mb-2 fw-bold", "View"),
+            radioButtons(
+              "cox_heatmap_view",
+              NULL,
+              choices = c("Single heatmap" = "single", "Gallery" = "gallery"),
+              selected = "single"
+            )
           )
         )
       )
@@ -1039,15 +1104,18 @@ ui <- page_sidebar(
             nav_panel("Heatmap", value = "heatmap"),
             nav_panel("Forest table", value = "forest_table")
           ),
-          tags$label(class = "control-label mb-2 fw-bold", "Scope"),
-          radioButtons(
-            "mm_scope",
-            NULL,
-            choices = c("Population-level" = "main", "Within-pair" = "within_pair"),
-            selected = "main"
+          conditionalPanel(
+            condition = "input.mm_viz_tabs == 'forest_table' || (input.mm_viz_tabs == 'heatmap' && input.mm_heatmap_view != 'gallery')",
+            tags$label(class = "control-label mb-2 fw-bold", "Scope"),
+            radioButtons(
+              "mm_scope",
+              NULL,
+              choices = c("Cohort-level" = "main", "Within-pair" = "within_pair"),
+              selected = "main"
+            )
           ),
           conditionalPanel(
-            condition = "input.mm_scope == 'within_pair'",
+            condition = "input.mm_scope == 'within_pair' && (input.mm_viz_tabs == 'forest_table' || (input.mm_viz_tabs == 'heatmap' && input.mm_heatmap_view != 'gallery'))",
             div(
               class = "within-pair-suboptions",
               radioButtons(
@@ -1061,6 +1129,16 @@ ui <- page_sidebar(
           conditionalPanel(
             condition = "input.mm_viz_tabs == 'forest_table'",
             uiOutput("mm_outcome_selector")
+          ),
+          conditionalPanel(
+            condition = "input.mm_viz_tabs == 'heatmap'",
+            tags$label(class = "control-label mb-2 fw-bold", "View"),
+            radioButtons(
+              "mm_heatmap_view",
+              NULL,
+              choices = c("Single heatmap" = "single", "Gallery" = "gallery"),
+              selected = "single"
+            )
           )
         )
       )
@@ -1081,26 +1159,29 @@ ui <- page_sidebar(
             nav_panel("Forest table", value = "forest_table")
           ),
           conditionalPanel(
-            condition = "input.baseline_ch_viz_tabs == 'heatmap' && input.baseline_ch_scope == 'main'",
+            condition = "input.baseline_ch_viz_tabs == 'heatmap' && (input.baseline_ch_heatmap_view != 'gallery') && input.baseline_ch_scope == 'main'",
             uiOutput("mortality_heatmap_selector")
           ),
           conditionalPanel(
-            condition = "input.baseline_ch_viz_tabs == 'heatmap' && input.baseline_ch_scope == 'within_pair'",
+            condition = "input.baseline_ch_viz_tabs == 'heatmap' && (input.baseline_ch_heatmap_view != 'gallery') && input.baseline_ch_scope == 'within_pair'",
             uiOutput("within_pair_heatmap_selector")
           ),
           conditionalPanel(
             condition = "input.baseline_ch_viz_tabs == 'forest_table'",
             uiOutput("current_health_exposure_selector")
           ),
-          tags$label(class = "control-label mb-2 fw-bold", "Scope"),
-          radioButtons(
-            "baseline_ch_scope",
-            NULL,
-            choices = c("Population-level" = "main", "Within-pair" = "within_pair"),
-            selected = "main"
+          conditionalPanel(
+            condition = "input.baseline_ch_viz_tabs == 'forest_table' || (input.baseline_ch_viz_tabs == 'heatmap' && input.baseline_ch_heatmap_view != 'gallery')",
+            tags$label(class = "control-label mb-2 fw-bold", "Scope"),
+            radioButtons(
+              "baseline_ch_scope",
+              NULL,
+              choices = c("Cohort-level" = "main", "Within-pair" = "within_pair"),
+              selected = "main"
+            )
           ),
           conditionalPanel(
-            condition = "input.baseline_ch_scope == 'within_pair'",
+            condition = "input.baseline_ch_scope == 'within_pair' && (input.baseline_ch_viz_tabs == 'forest_table' || (input.baseline_ch_viz_tabs == 'heatmap' && input.baseline_ch_heatmap_view != 'gallery'))",
             div(
               class = "within-pair-suboptions",
               radioButtons(
@@ -1109,6 +1190,16 @@ ui <- page_sidebar(
                 choices = c("All twin pairs" = "all_pairs", "Monozygotic twins" = "mz_twins"),
                 selected = "all_pairs"
               )
+            )
+          ),
+          conditionalPanel(
+            condition = "input.baseline_ch_viz_tabs == 'heatmap'",
+            tags$label(class = "control-label mb-2 fw-bold", "View"),
+            radioButtons(
+              "baseline_ch_heatmap_view",
+              NULL,
+              choices = c("Single heatmap" = "single", "Gallery" = "gallery"),
+              selected = "single"
             )
           )
         )
@@ -1129,15 +1220,18 @@ ui <- page_sidebar(
             nav_panel("Heatmap", value = "heatmap"),
             nav_panel("Forest table", value = "forest_table")
           ),
-          tags$label(class = "control-label mb-2 fw-bold", "Scope"),
-          radioButtons(
-            "prevalent_disease_scope",
-            NULL,
-            choices = c("Population-level" = "main", "Within-pair" = "within"),
-            selected = "main"
+          conditionalPanel(
+            condition = "input.baseline_pd_viz_tabs == 'forest_table' || (input.baseline_pd_viz_tabs == 'heatmap' && input.baseline_pd_heatmap_view != 'gallery')",
+            tags$label(class = "control-label mb-2 fw-bold", "Scope"),
+            radioButtons(
+              "prevalent_disease_scope",
+              NULL,
+              choices = c("Cohort-level" = "main", "Within-pair" = "within"),
+              selected = "main"
+            )
           ),
           conditionalPanel(
-            condition = "input.prevalent_disease_scope == 'within'",
+            condition = "input.prevalent_disease_scope == 'within' && (input.baseline_pd_viz_tabs == 'forest_table' || (input.baseline_pd_viz_tabs == 'heatmap' && input.baseline_pd_heatmap_view != 'gallery'))",
             div(
               class = "within-pair-suboptions",
               radioButtons(
@@ -1152,6 +1246,16 @@ ui <- page_sidebar(
           conditionalPanel(
             condition = "input.baseline_pd_viz_tabs == 'forest_table'",
             uiOutput("prevalent_disease_forest_selector")
+          ),
+          conditionalPanel(
+            condition = "input.baseline_pd_viz_tabs == 'heatmap'",
+            tags$label(class = "control-label mb-2 fw-bold", "View"),
+            radioButtons(
+              "baseline_pd_heatmap_view",
+              NULL,
+              choices = c("Single heatmap" = "single", "Gallery" = "gallery"),
+              selected = "single"
+            )
           )
         )
       )
@@ -1464,6 +1568,162 @@ server <- function(input, output, session) {
   })
   
   output$heatmap_ui <- renderUI({
+    if (input$analysis_type == "cox" && input$cox_viz_tabs == "heatmap" &&
+        !is.null(input$cox_heatmap_view) && input$cox_heatmap_view == "gallery") {
+      gallery_specs <- list(
+        list(label = "Cohort", scope = "main", within = NULL),
+        list(label = "Within all twin pairs", scope = "within_pair", within = "all_pairs"),
+        list(label = "Within monozygotic twin pairs", scope = "within_pair", within = "mz_twins")
+      )
+      
+      cards <- lapply(gallery_specs, function(spec) {
+        svg_path <- find_heatmap_svg("cox", input$analysis_set, NULL, spec$scope, spec$within)
+        if (is.null(svg_path)) {
+          return(
+            card(
+              card_header(spec$label),
+              card_body(
+                div(class = "alert alert-warning", "Heatmap not available.")
+              )
+            )
+          )
+        }
+        rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+        card(
+          card_header(spec$label),
+          card_body(
+            class = "heatmap-gallery-body",
+            tags$img(src = rel_path, class = "heatmap-gallery-img")
+          )
+        )
+      })
+      
+      return(div(class = "heatmap-gallery-grid", cards))
+    }
+    
+    if (input$analysis_type == "multimorbidity" && input$mm_viz_tabs == "heatmap" &&
+        !is.null(input$mm_heatmap_view) && input$mm_heatmap_view == "gallery") {
+      mm_cat <- if (!is.null(input$mm_category_tabs)) input$mm_category_tabs else "ag"
+      gallery_specs <- list(
+        list(label = "Cohort", scope = "main", within = NULL),
+        list(label = "Within all twin pairs", scope = "within_pair", within = "all_pairs"),
+        list(label = "Within monozygotic twin pairs", scope = "within_pair", within = "mz_twins")
+      )
+      
+      cards <- lapply(gallery_specs, function(spec) {
+        filename <- resolve_mm_filename(input$analysis_set, mm_cat, spec$scope, spec$within)
+        svg_path <- if (!is.null(filename)) {
+          find_multimorbidity_svg(input$analysis_set, mm_cat, filename, spec$scope)
+        } else {
+          NULL
+        }
+        if (is.null(svg_path)) {
+          return(
+            card(
+              card_header(spec$label),
+              card_body(
+                div(class = "alert alert-warning", "Heatmap not available.")
+              )
+            )
+          )
+        }
+        rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+        card(
+          card_header(spec$label),
+          card_body(
+            class = "heatmap-gallery-body",
+            tags$img(src = rel_path, class = "heatmap-gallery-img")
+          )
+        )
+      })
+      
+      return(div(class = "heatmap-gallery-grid", cards))
+    }
+    
+    if (input$analysis_type == "baseline" && input$subcategory == "current_health" &&
+        input$baseline_ch_viz_tabs == "heatmap" &&
+        !is.null(input$baseline_ch_heatmap_view) && input$baseline_ch_heatmap_view == "gallery") {
+      if (is.null(input$mortality_heatmap_variant)) {
+        return(div(class = "alert alert-info", "Select a heatmap variant to view the gallery."))
+      }
+      variant <- input$mortality_heatmap_variant
+      gallery_specs <- list(
+        list(label = "Cohort", scope = "main", within = NULL),
+        list(label = "Within all twin pairs", scope = "within_pair", within = "all_pairs"),
+        list(label = "Within monozygotic twin pairs", scope = "within_pair", within = "mz_twins")
+      )
+      
+      cards <- lapply(gallery_specs, function(spec) {
+        svg_path <- if (spec$scope == "main") {
+          find_mortality_heatmap_svg(input$analysis_set, variant)
+        } else {
+          find_within_pair_heatmap_svg(input$analysis_set, variant, spec$within)
+        }
+        if (is.null(svg_path)) {
+          return(
+            card(
+              card_header(spec$label),
+              card_body(
+                div(class = "alert alert-warning", "Heatmap not available.")
+              )
+            )
+          )
+        }
+        rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+        card(
+          card_header(spec$label),
+          card_body(
+            class = "heatmap-gallery-body",
+            tags$img(src = rel_path, class = "heatmap-gallery-img")
+          )
+        )
+      })
+      
+      return(div(class = "heatmap-gallery-grid", cards))
+    }
+    
+    if (input$analysis_type == "baseline" && input$subcategory == "prevalent_disease" &&
+        input$baseline_pd_viz_tabs == "heatmap" &&
+        !is.null(input$baseline_pd_heatmap_view) && input$baseline_pd_heatmap_view == "gallery") {
+      if (is.null(input$prevalent_disease_time_interval)) {
+        return(div(class = "alert alert-info", "Select a time window to view the gallery."))
+      }
+      time_interval <- input$prevalent_disease_time_interval
+      gallery_specs <- list(
+        list(label = "Cohort", scope = "main", within = NULL),
+        list(label = "Within all twin pairs", scope = "within", within = "all_pairs"),
+        list(label = "Within monozygotic twin pairs", scope = "within", within = "mz_twins")
+      )
+      
+      cards <- lapply(gallery_specs, function(spec) {
+        svg_path <- if (spec$scope == "main") {
+          find_prevalent_disease_heatmap_svg(input$analysis_set, time_interval)
+        } else {
+          find_prevalent_disease_within_heatmap_svg(input$analysis_set, time_interval, spec$within)
+        }
+        if (is.null(svg_path)) {
+          return(
+            card(
+              card_header(spec$label),
+              card_body(
+                div(class = "alert alert-warning", "Heatmap not available.")
+              )
+            )
+          )
+        }
+        rel_path <- sub(".*www/", "", gsub("\\\\", "/", svg_path))
+        card(
+          card_header(spec$label),
+          card_body(
+            class = "heatmap-gallery-body",
+            tags$img(src = rel_path, class = "heatmap-gallery-img")
+          )
+        )
+      })
+      
+      return(div(class = "heatmap-gallery-grid", cards))
+    }
+    
     svg_path <- current_heatmap_path()
     if (is.null(svg_path)) {
       msg <- if (input$analysis_type == "baseline" && 
@@ -1505,8 +1765,26 @@ server <- function(input, output, session) {
     
     covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
     
+    if (!is.null(input$baseline_ch_heatmap_view) && input$baseline_ch_heatmap_view == "gallery") {
+      return(
+        div(
+          class = "text-muted small mt-3",
+          style = "line-height: 1.6;",
+          tags$p(
+            class = "mb-0",
+            "Gallery showing cohort, all twin pairs, and monozygotic twin pairs heatmaps ",
+            "for ", tags$strong(format_display_name(variant)), " markers. ",
+            "Each row represents an outcome, each column an organ age. ",
+            "Effect sizes are standardized and reflect a 1 SD increase in organ age. ",
+            "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+            "Models use the ", tags$strong(covariate_set_name), " covariate set."
+          )
+        )
+      )
+    }
+    
     scope_text <- if (scope == "main") {
-      "At cohort level"
+      "Cohort analysis"
     } else if (scope == "within_pair") {
       pair_type <- if (is.null(input$baseline_ch_within_pair_type)) "all_pairs" else input$baseline_ch_within_pair_type
       if (pair_type == "mz_twins") {
@@ -1552,8 +1830,27 @@ server <- function(input, output, session) {
     
     time_window_display <- format_display_name(input$prevalent_disease_time_interval)
     
+    if (!is.null(input$baseline_pd_heatmap_view) && input$baseline_pd_heatmap_view == "gallery") {
+      return(
+        div(
+          class = "text-muted small mt-3",
+          style = "line-height: 1.6;",
+          tags$p(
+            class = "mb-0",
+            "Gallery showing cohort, all twin pairs, and monozygotic twin pairs heatmaps ",
+            "for prior disease at baseline. ",
+            "Each row represents a disease, each column an organ age. ",
+            "Effect sizes are displayed as log(OR) and reflect a 1 SD increase in organ age. ",
+            "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+            "Models use the ", tags$strong(covariate_set_name), " covariate set. ",
+            "Look-back window: ", tags$strong(time_window_display), "."
+          )
+        )
+      )
+    }
+    
     scope_text <- if (scope == "main") {
-      "At cohort level"
+      "Cohort analysis"
     } else if (scope == "within") {
       pair_type <- if (is.null(input$prevalent_within_pair_type)) "all_pairs" else input$prevalent_within_pair_type
       if (pair_type == "mz_twins") {
@@ -1592,8 +1889,25 @@ server <- function(input, output, session) {
     
     covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
     
+    if (!is.null(input$cox_heatmap_view) && input$cox_heatmap_view == "gallery") {
+      return(
+        div(
+          class = "text-muted small mt-3",
+          style = "line-height: 1.6;",
+          tags$p(
+            class = "mb-0",
+            "Gallery showing cohort, all twin pairs, and monozygotic twin pairs heatmaps ",
+            "from Cox proportional hazards models. ",
+            "Colors indicate log hazard ratios per 1 SD higher organ age, adjusted for the ",
+            tags$strong(covariate_set_name), " covariate set. ",
+            "Non-significant associations at FDR < 0.05 are marked by crosses."
+          )
+        )
+      )
+    }
+    
     scope_text <- if (scope == "main") {
-      "At cohort level"
+      "Cohort analysis"
     } else if (scope == "within_pair") {
       pair_type <- if (is.null(input$cox_within_pair_type)) "all_pairs" else input$cox_within_pair_type
       if (pair_type == "mz_twins") {
@@ -1633,8 +1947,26 @@ server <- function(input, output, session) {
     
     covariate_set_name <- get_covariate_set_display_name(input$analysis_set)
     
+    if (!is.null(input$mm_heatmap_view) && input$mm_heatmap_view == "gallery") {
+      return(
+        div(
+          class = "text-muted small mt-3",
+          style = "line-height: 1.6;",
+          tags$p(
+            class = "mb-0",
+            "Gallery showing cohort, all twin pairs, and monozygotic twin pairs heatmaps ",
+            "for multimorbidity within disease groupings. ",
+            "Each row represents a disease grouping, each column an organ age. ",
+            "Effect sizes are expressed as log incidence rate ratio (IRR) or log hazard ratio (HR) per 1 SD increase in organ age. ",
+            "Non-significant associations at FDR < 0.05 are marked by crosses. ",
+            "Models use the ", tags$strong(covariate_set_name), " covariate set."
+          )
+        )
+      )
+    }
+    
     scope_text <- if (scope == "main") {
-      "At cohort level"
+      "Cohort analysis"
     } else if (scope == "within_pair") {
       pair_type <- if (is.null(input$mm_within_pair_type)) "all_pairs" else input$mm_within_pair_type
       if (pair_type == "mz_twins") {
@@ -2034,7 +2366,7 @@ server <- function(input, output, session) {
                   class = "mb-0",
                   tags$li("Select a ", tags$strong("covariate set"), " to define the adjustment strategy used in the analyses."),
                   tags$li("Choose an ", tags$strong("analysis type"), " to explore baseline health, incident disease, or multimorbidity."),
-                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort-level overview of associations across organs and outcomes."),
+                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort analysis of associations across organs and outcomes."),
                   tags$li("Switch to the ", tags$strong("forest tables"), " to inspect individual estimates and confidence intervals in detail."),
                   tags$li("Explore ", tags$strong("clock composition"), " to see the proteins that contribute most strongly to each organ-specific aging clock.")
                 )
@@ -2049,7 +2381,7 @@ server <- function(input, output, session) {
                   class = "mb-0",
                   tags$li("Select a ", tags$strong("covariate set"), " to define the adjustment strategy used in the analyses."),
                   tags$li("Choose an ", tags$strong("analysis type"), " to explore baseline health, incident disease, or multimorbidity."),
-                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort-level overview of associations across organs and outcomes."),
+                  tags$li("Use the ", tags$strong("heatmaps"), " to obtain a cohort analysis of associations across organs and outcomes."),
                   tags$li("Switch to the ", tags$strong("forest tables"), " to inspect individual estimates and confidence intervals in detail."),
                   tags$li("Explore ", tags$strong("clock composition"), " to see the proteins that contribute most strongly to each organ-specific aging clock.")
                 )
@@ -2189,7 +2521,7 @@ server <- function(input, output, session) {
         style = "font-size: 0.9rem;",
         "Overview of proteins contributing most strongly to the organ-specific aging clocks. ",
         "Browse, in a two-column gallery, the top 10 clock proteins for each organ. ",
-        "Proteins are ranked by the largest absolute clock coefficient observed in either the male or female models."
+        "Proteins are selected by absolute coefficient magnitude, then ranked from highest to lowest."
       )
     )
   })
